@@ -504,6 +504,12 @@ def shuffle():
     return redirect(url_for('dashboard'))
 
 
+# Initialize database tables automatically when Gunicorn starts the app
+with app.app_context():
+    try:
+        init_db()
+    except Exception as e:
+        print("Database initialization error:", e)
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True, port=5000)
