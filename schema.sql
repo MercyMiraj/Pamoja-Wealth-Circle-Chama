@@ -1,9 +1,9 @@
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS contributions;
-DROP TABLE IF EXISTS payout_schedule;
+DROP TABLE IF EXISTS payout_schedule CASCADE;
+DROP TABLE IF EXISTS contributions CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     full_name TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
@@ -12,18 +12,19 @@ CREATE TABLE users (
 );
 
 CREATE TABLE contributions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     week_label TEXT NOT NULL,
     amount_paid REAL NOT NULL,
     date_paid TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE payout_schedule (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     rotation_order INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     payout_date TEXT NOT NULL,
-    status TEXT DEFAULT 'pending' -- 'completed' or 'pending'
+    status TEXT DEFAULT 'pending', -- 'completed' or 'pending'
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
