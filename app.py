@@ -27,7 +27,6 @@ class PostgresWrapper:
 
     def execute(self, query, params=None):
         cur = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        # Convert SQLite '?' placeholders to PostgreSQL '%s' placeholders
         query_pg = query.replace('?', '%s')
         if params:
             cur.execute(query_pg, params)
@@ -54,7 +53,7 @@ def init_db():
     with app.app_context():
         db = get_db()
 
-        # 1. Ensure base tables exist (PostgreSQL syntax with SERIAL)
+        # 1. Ensure base tables exist
         db.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -110,10 +109,10 @@ def init_db():
         except Exception:
             pass
 
-        # 4. Auto-seed official members with secure unique admin passwords
+        # 4. Auto-seed official members (Updated Purity Murugi -> Purity Gicovi)
         flyer_members = [
             ('Vivian Nyaga', 'vivian', 'admin', 'vivianAdmin2026!'),
-            ('Purity Murugi', 'purity', 'member', 'pamoja123'),
+            ('Purity Gicovi', 'purity', 'member', 'pamoja123'),
             ('Mukiti Ann', 'ann.mukiti', 'member', 'pamoja123'),
             ('Mercy Miraj', 'mercy.miraj', 'admin', 'mercyAdmin2026!'),
             ('Ann Murimi', 'ann.murimi', 'member', 'pamoja123'),
@@ -161,7 +160,7 @@ def seed_preplanned_schedule(db):
 
     preplanned_schedule = [
         (1, 'Vivian Nyaga', 'Sunday, Nov 1, 2026', 'completed'),
-        (2, 'Purity Murugi', 'Sunday, Nov 8, 2026', 'completed'),
+        (2, 'Purity Gicovi', 'Sunday, Nov 8, 2026', 'completed'),
         (3, 'Mukiti Ann', 'Sunday, Nov 15, 2026', 'pending'),
         (4, 'Mercy Miraj', 'Sunday, Nov 22, 2026', 'pending'),
         (5, 'Ann Murimi', 'Sunday, Nov 29, 2026', 'pending'),
@@ -379,6 +378,24 @@ def admin_mark_paid(user_id):
     return redirect(url_for('dashboard'))
 
 
+@app.route('/admin/mark-unpaid/<int:user_id>', methods=['POST'])
+def admin_mark_unpaid(user_id):
+    if session.get('role') != 'admin':
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    current_week = 'Week of Nov 9 - Nov 15, 2026'
+    db = get_db()
+
+    db.execute(
+        'DELETE FROM contributions WHERE user_id = ? AND week_label = ?',
+        (user_id, current_week),
+    )
+    db.commit()
+    flash('Payment entry reversed. Member marked as UNPAID.', 'warning')
+    return redirect(url_for('dashboard'))
+
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -504,7 +521,6 @@ def shuffle():
     return redirect(url_for('dashboard'))
 
 
-# Initialize database tables automatically when Gunicorn starts the app
 with app.app_context():
     try:
         init_db()

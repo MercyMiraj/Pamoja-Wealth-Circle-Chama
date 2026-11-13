@@ -142,16 +142,22 @@
                                     {% if session.role == 'admin' %}
                                     <td class="text-end">
                                         <div class="btn-group" role="group">
-                                            {% if not member.paid_current_week %}
+                                            {% if member.paid_current_week %}
+                                            <form action="{{ url_for('admin_mark_unpaid', user_id=member.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Reverse payment for {{ member.full_name }}?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm me-1">Undo Paid</button>
+                                            </form>
+                                            {% else %}
                                             <form action="{{ url_for('admin_mark_paid', user_id=member.id) }}" method="POST" class="d-inline">
                                                 <button type="submit" class="btn btn-success btn-sm me-1">Mark Paid</button>
                                             </form>
                                             {% endif %}
+
                                             {% if member.role != 'admin' %}
                                             <form action="{{ url_for('promote_admin', user_id=member.id) }}" method="POST" class="d-inline">
                                                 <button type="submit" class="btn btn-warning btn-sm me-1" title="Make Admin">Admin</button>
                                             </form>
                                             {% endif %}
+
                                             {% if member.id != session.user_id %}
                                             <form action="{{ url_for('remove_member', user_id=member.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Permanently remove this member?');">
                                                 <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
@@ -326,7 +332,7 @@
                     label: 'Contributions (KES)',
                     data: {{ chart_data | tojson }},
                     backgroundColor: [
-                        '#6f42c1', '#ffc107', '#198754', '#0dcaf0', '#dc3546', 
+                        '#6f42c1', '#ffc107', '#198754', '#0dcaf0', '#dc3545', 
                         '#20c997', '#fd7e14', '#6610f2', '#d63384', '#ffc107'
                     ],
                     borderColor: '#16161e',
